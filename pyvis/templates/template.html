@@ -271,6 +271,12 @@
                   value : []
               };
 
+            function htmlTitle(html) {
+                const container = document.createElement("div");
+                container.innerHTML = html;
+                return container;
+            };
+
               {% if select_menu %}
                   new TomSelect("#select-node",{
                       create: false,
@@ -430,9 +436,27 @@
 
                   {% else %}
 
-                  // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet({{nodes|tojson}});
-                  edges = new vis.DataSet({{edges|tojson}});
+                  // Make titles HTML elements.
+                  var myNodes = {{nodes|tojson}};
+                  for (var mynode of myNodes) {
+                    if ("title" in mynode) {
+                      mynode.title = htmlTitle(mynode.title);
+                    } else {
+                      console.log("Object does not have title key");
+                    }
+                  }
+                  nodes = new vis.DataSet(myNodes);
+
+                  // Make edges HTML elements.
+                  var myEdges = {{edges|tojson}};
+                  for (var myedge of myEdges) {
+                    if ("title" in myedge) {
+                      myedge.title = htmlTitle(myedge.title);
+                    } else {
+                      console.log("Object does not have title key");
+                    }
+                  }
+                  edges = new vis.DataSet(myEdges);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
@@ -440,6 +464,7 @@
                     nodeColors[nodeId] = allNodes[nodeId].color;
                   }
                   allEdges = edges.get({ returnType: "Object" });
+                  
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
